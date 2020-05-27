@@ -9,15 +9,7 @@ DS.genHeadersFromMetadataRows((1,6))
 
 DS.flagcodes().are({"None":"OK", "Repeat Value":"Repeat Value", "Missing Value": "Missing", "Outlier": "Exceeds Range", "Spatial Inconsistency": "Incosistent (Spatial)", "Logical Inconsistency": "Inconsistent (Logical)", "Spike": "Spike", "Hardware Range": "Exceeds Hardware Range"})
 
-series_max = DS['Air temperature (2-meter) monitor_Maximum']
-series_min = DS['Air temperature (2-meter) monitor_Minimum']
-series_max_10 = DS['Air temperature (10-meter) monitor_Maximum']
-series_avg_2 = DS['Air temperature (2-meter) monitor_Average']
-series_avg_10 = DS['Air temperature (10-meter) monitor_Average']
 
-series_max.timestep((series_max.beginning(+1)) - series_max.beginning())
-series_min.timestep((series_min.beginning(+1)) - series_min.beginning())
-series_avg_2.timestep((series_min.beginning(+1)) - series_min.beginning())
 
 def rv_test(value):
     n = 3
@@ -105,12 +97,27 @@ def slope_test(value, i):
 
         return False
 
+
+series_max = DS['Air temperature (2-meter) monitor_Maximum']
+series_min = DS['Air temperature (2-meter) monitor_Minimum']
+series_max_10 = DS['Air temperature (10-meter) monitor_Maximum']
+series_avg_2 = DS['Air temperature (2-meter) monitor_Average']
+series_avg_10 = DS['Air temperature (10-meter) monitor_Average']
+
+series_max.timestep((series_max.beginning(+1)) - series_max.beginning())
+series_min.timestep((series_min.beginning(+1)) - series_min.beginning())
+series_avg_2.timestep((series_min.beginning(+1)) - series_min.beginning())
+
+
+
+
 for i in range(1):
 
     timedeltas = []
 
     print("\n Missing Value Test ---------------------")
     start = time.time()
+    series_max.datapoint().flag('Missing Value').missingValueTest(-9999)
     series_avg_2.datapoint().flag('Missing Value').missingValueTest(-9999)
     end = time.time()
 
@@ -120,6 +127,7 @@ for i in range(1):
 
     print("\n Repeat Value Test ---------------------")
     start = time.time()
+    series_max.datapoint().flag("Repeat Value").when(rv_test)
     series_avg_2.datapoint().flag("Repeat Value").when(rv_test)
     end = time.time()
 
