@@ -50,6 +50,8 @@ class Dataset():
         if filePath is not None:
             nptemp = None
 
+            print("Loading Dataset: ", filePath)
+            print("This may take a few seconds.")
             try:
                 nptemp = np.genfromtxt(filePath, delimiter=',', dtype=None, encoding=None)
             except:
@@ -317,16 +319,21 @@ Warning: Default flag code undefined.
                             localindexes['other'] += 1
 
         if localindexes['dt'] is 0:
-            traceback.print_exc(file=sys.stdout)
-            print("\n---------------------------------\n")
+            # traceback.print_exc(file=sys.stdout)
+            print("\n---------------------------------")
             print('''
 Warning: Could not automatically detect or convert datetime column for dataset from file "{}"
 Please convert manually with dataset[<col_number or column_name>].isDateTime(<format>).
             '''.format(self._fp))
+            print("---------------------------------\n")
+
+
+    '''
+    --- Public Functions --------------------------
+    '''
 
     def isDateTime(self, format):
         pass
-
 
 
     def renameSeriesHeaders(self, arg):
@@ -355,8 +362,6 @@ Please convert manually with dataset[<col_number or column_name>].isDateTime(<fo
                         newHeaders.append(col)
                     else:
                         newHeaders[j] += '_'+col
-
-        print(newHeaders)
 
         self.seriesHeaders = np.array(newHeaders)
 
