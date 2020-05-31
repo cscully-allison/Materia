@@ -19,7 +19,7 @@ from Materia import *
 
 This will allow you to create a new Dataset object from tabular data stored in .csv format and begin using Materia.
 
-## Table of Language Constructs
+## Some Important Language Constructs
 
 
 | Language Construct                   | Additional Info                               | Description                                                                                                                                                                                                                                                                                                                                  |
