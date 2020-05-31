@@ -101,7 +101,8 @@ Materia
 <td>
 <pre>
 def runTest(self, dataframe):
-      outdf = np.abs(dataframe[self.column] - dataframe[self.comparisonColumn]) / ((dataframe[self.column]+dataframe[self.comparisonColumn]/2.0)) * 100.0 < self.percentDifference
+      outdf = np.abs(dataframe[self.column] - dataframe[self.comparisonColumn]) /
+            ((dataframe[self.column]+dataframe[self.comparisonColumn]/2.0)) * 100.0 < self.percentDifference
       outdf.name = self.column
 
       return outdf.apply(lambda x: self.flag.flag(x, self.testName))
@@ -150,7 +151,10 @@ def runTest(self, dataframe):
           true.fill(1)
           false.fill(0)
 
-          outdf[self.column] = np.where((dataframe[self.column] > dataframe[self.comparisonColumn]), true, false)
+          outdf[self.column] = np.where(
+                  (dataframe[self.column] > dataframe[self.comparisonColumn]), 
+                  true, 
+                  false)
           # print(outdf)
 
       outdf.name = self.column
