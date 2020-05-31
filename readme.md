@@ -21,7 +21,7 @@ This will allow you to create a new Dataset object from tabular data stored in .
 
 ## Test Documenation
 
-For a side-by-side documenation of tests evaluated in the QOD 2020 Materia paper please  [go here | https://github.com/cscully-allison/Materia/blob/master/tests/readme.md#test-documentation]
+For a side-by-side documenation of tests evaluated in the QOD 2020 Materia paper please  [go here](https://github.com/cscully-allison/Materia/blob/master/tests/readme.md#test-documentation)
 
 
 ## Some Important Language Constructs
