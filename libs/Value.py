@@ -30,6 +30,10 @@ class Value():
             sublist = np.empty([0])
             if not supress:
                 print("Warning: Value.prior() specified number out of bounds, empty array returned.")
+            if self._scalar is False:
+                raise Exception('''Cannot get prior from list. Please use this function only on the original value variable.''')
+            if self._context is None:
+                raise Exception('''Cannot get prior derived math product. Please use this function only on the original value variable or one pulled from a time series using the .at() function.''')
         else:
             sublist = self._context[self._valueIndex-num:self._valueIndex]
         return Value(self._valueIndex-num, sublist, self.value, self._dt, False, timestep=self._timedelta)
@@ -52,7 +56,7 @@ class Value():
             return self._mathOrganizer(self, other, '+')
         else:
             if type(other) is not type("") and type(other) is not type({}):
-                return self.value + other
+                return Value(currentValue=self.value + other)
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -62,38 +66,56 @@ class Value():
             return self._mathOrganizer(self, other, '-')
         else:
             if type(other) is not type("") and type(other) is not type({}):
-                return self.value - other
+                return Value(currentValue=self.value - other)
 
     def __rsub__(self, other):
         if type(self) is type(other):
             return self._mathOrganizer(other, self, '-')
         else:
             if type(other) is not type("") and type(other) is not type({}):
-                return other - self.value
+                return Value(currentValue= other - self.value)
 
     def __mul__(self, other):
         if type(self) is type(other):
             return self._mathOrganizer(self, other, '*')
         else:
             if type(other) is not type("") and type(other) is not type({}):
-                return self.value * other
+                return Value(currentValue= other * self.value)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         if type(self) is type(other):
             return self._mathOrganizer(self, other, '/')
-        else:
-            if type(other) is not type("") and type(other) is not type({}):
-                return self.value / other
+        elif type(other) is not type("") and type(other) is not type({}):
+            if self._scalar is False:
+                return self._mathOrganizer(self, Value(currentValue=other), '/')
+            else:
+                return Value(currentValue= self.value / other)
 
-    def __rdiv__(self, other):
+    def __floordiv__(self, other):
         if type(self) is type(other):
-            return self._mathOrganizer(other, self, '/')
-        else:
-            if type(other) is not type("") and type(other) is not type({}):
-                return self.value / other
+            return self._mathOrganizer(self, other, '/')
+        elif type(other) is not type("") and type(other) is not type({}):
+            if self._scalar is False:
+                return self._mathOrganizer(self, Value(currentValue=other), '/')
+            else:
+                return Value(currentValue= self.value // other)
+    #
+    # def __div__(self, other):
+    #     if type(self) is type(other):
+    #         return self._mathOrganizer(self, other, '/')
+    #     else:
+    #         if type(other) is not type("") and type(other) is not type({}):
+    #             return Value(currentValue= self.value / other)
+    #
+    # def __rdiv__(self, other):
+    #     if type(self) is type(other):
+    #         return self._mathOrganizer(other, self, '/')
+    #     else:
+    #         if type(other) is not type("") and type(other) is not type({}):
+    #             return Value(currentValue= other / self.value)
 
     # overloaded comparision operators
     def __gt__(self, other):
@@ -154,15 +176,14 @@ class Value():
                 raise Exception('''
 Cannot subtract or divide a vector or list from a scalar.
                 ''')
-
         if lhs._scalar is True and rhs._scalar is True:
             return self._scalarOp(lhs.value, rhs.value, op)
         elif lhs._scalar is True and rhs._scalar is False:
             return self._scalarListOp(lhs.value, rhs._context, op)
         elif lhs._scalar is False and rhs._scalar is True:
             return self._scalarListOp(rhs.value, lhs._context, op)
-
         else:
+            return self._listListOp(rhs._context, lhs._context, op)
             raise Exception('''
 Error: No operation defintion exists for list value {} list value within test scope.
         '''.format(op))
@@ -175,7 +196,7 @@ Error: No operation defintion exists for list value {} list value within test sc
         elif self._scalar is False and other._scalar is True:
             return self._scalarListCmp(other.value, self._context, cmp)
         else:
-            return self._listListCmp(other.value, self._context, cmp)
+            return self._listListCmp(other._context, self._context, cmp)
 
 
     def _scalarOp(self, lhs, rhs, op):
@@ -188,27 +209,35 @@ Error: No operation defintion exists for list value {} list value within test sc
         if op is "/":
             return lhs / rhs
 
-    def _scalarListOp(self, s1, l1, op):
+    def _listListOp(self, lhs, rhs, op):
+        lr = []
         if op is "+":
-            lr = []
+            lr = [a + b for a, b in zip(lhs, rhs)]
+        if op is "-":
+            lr = [a - b for a, b in zip(lhs, rhs)]
+        if op is "*":
+            lr = [a * b for a, b in zip(lhs, rhs)]
+        if op is "/":
+            lr = [a / b for a, b in zip(lhs, rhs)]
+        lrl = Value(currentValue=self.value, context=np.array(lr), scalar=False)
+        return lrl
+
+    def _scalarListOp(self, s1, l1, op):
+        lr = []
+        if op is "+":
             for s in l1:
                 lr.append(s+s1)
-            return lr
         if op is "-":
-            lr = []
             for s in l1:
                 lr.append(s-s1)
-            return lr
         if op is "*":
-            lr = []
             for s in l1:
                 lr.append(s*s1)
-            return lr
         if op is "/":
-            lr = []
             for s in l1:
                 lr.append(s/s1)
-            return lr
+        lrl = Value(currentValue=self.value, context=np.array(lr), scalar=False)
+        return lrl
 
     def _scalarCmp(self, s1, s2, cmp):
         if cmp is "==":
